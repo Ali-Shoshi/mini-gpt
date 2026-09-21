@@ -107,6 +107,12 @@ def default_source_paths() -> tuple[Path, Path | None]:
     raw_validation = RAW_DIR / "validation.txt"
     if raw_train.exists():
         return raw_train, raw_validation if raw_validation.exists() else None
+
+    tinystories_train = RAW_DIR / TINYSTORIES_TRAIN_FILE
+    tinystories_validation = RAW_DIR / TINYSTORIES_VALID_FILE
+    if tinystories_train.exists() and tinystories_validation.exists():
+        return tinystories_train, tinystories_validation
+
     return _download_tinyshakespeare(), None
 
 

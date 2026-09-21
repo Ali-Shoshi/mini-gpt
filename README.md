@@ -17,7 +17,7 @@ train.py       Training loop, evaluation, and checkpoint saving.
 sample.py      Loads a checkpoint and generates text from a prompt.
 ```
 
-## Run it
+## Setup
 
 Activate the virtual environment in PowerShell:
 
@@ -25,25 +25,59 @@ Activate the virtual environment in PowerShell:
 .\.venv\Scripts\Activate.ps1
 ```
 
-Prepare the small starter corpus and its tokenizer for a quick smoke test:
+If PowerShell says that scripts are disabled, run this once in the same terminal, then activate the environment again:
 
 ```powershell
-python data.py --dataset tinyshakespeare
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
 ```
 
-For noticeably better English, prepare TinyStories V2 instead. This downloads approximately 2.3 GB and then tokenizes it into disk files:
+## Choose and prepare data
+
+### Quick pipeline test
+
+For a short test, set `MAX_STEPS = 100` in `config.py`, then prepare the small starter corpus:
+
+```powershell
+python data.py --dataset tinyshakespeare --force
+```
+
+This confirms that the tokenizer, data pipeline, GPU training, checkpointing, and sampling all work. It will learn Shakespeare-like text only.
+
+### Better first training run
+
+For more natural simple English, prepare TinyStories V2 instead. This explicitly downloads approximately 2.3 GB, then trains a BPE tokenizer and writes memory-mapped token shards to disk:
 
 ```powershell
 python data.py --dataset tinystories
 ```
 
-Start training after preparation:
+After this preparation completes, `train.py` automatically uses TinyStories. You do not need to change any other dataset setting.
+
+## Train
 
 ```powershell
 python train.py
 ```
 
-Checkpoints are written to `checkpoints/`; loss data and periodic generated samples are written to `logs/`. Stop safely with `Ctrl+C`; the last saved checkpoint remains available. Set `RESUME_TRAINING = True` in `config.py` to continue from `checkpoints/latest.pt`.
+Checkpoints are written to `checkpoints/`; loss data and periodic generated samples are written to `logs/`.
+
+```text
+checkpoints/best.pt       Best validation-loss checkpoint
+checkpoints/latest.pt     Latest periodic checkpoint
+logs/loss.png             Training and validation loss graph
+logs/metrics.csv          Loss and learning-rate measurements
+logs/sample_step_*.txt    Periodic generated text
+```
+
+To resume from `checkpoints/latest.pt`, set this in `config.py` before running `python train.py` again:
+
+```python
+RESUME_TRAINING = True
+```
+
+`latest.pt` is saved every 500 steps, so let the run reach its first save before relying on resume.
+
+## Generate text
 
 After a best checkpoint has been saved, generate text:
 
