@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import shutil
-import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -15,10 +13,8 @@ from tqdm import tqdm
 
 from config import (
     CONTEXT_LENGTH,
-    CORPUS_PATH,
     DATA_DIR,
     DATA_MANIFEST_PATH,
-    DEFAULT_DATA_URL,
     TINYSTORIES_REPO_ID,
     TINYSTORIES_TRAIN_FILE,
     TINYSTORIES_VALID_FILE,
@@ -57,22 +53,6 @@ class TokenShard:
         return np.asarray(self._tokens[start : start + length], dtype=np.int64)
 
 
-def _download_tinyshakespeare() -> Path:
-    """Get a tiny starter corpus only when no local corpus already exists."""
-    if CORPUS_PATH.exists():
-        return CORPUS_PATH
-
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    print("Downloading the Tiny Shakespeare starter corpus.")
-    request = urllib.request.Request(
-        DEFAULT_DATA_URL,
-        headers={"User-Agent": "mini-gpt-from-scratch/1.0"},
-    )
-    with urllib.request.urlopen(request) as response, CORPUS_PATH.open("wb") as output:
-        shutil.copyfileobj(response, output)
-    return CORPUS_PATH
-
-
 def download_tinystories() -> tuple[Path, Path]:
     """Download the 2.23 GB TinyStories V2 training text and validation text.
 
@@ -102,7 +82,7 @@ def download_tinystories() -> tuple[Path, Path]:
 
 
 def default_source_paths() -> tuple[Path, Path | None]:
-    """Prefer user-supplied raw files, then use the lightweight starter corpus."""
+    """Prefer user-supplied raw files, otherwise use prepared TinyStories."""
     raw_train = RAW_DIR / "train.txt"
     raw_validation = RAW_DIR / "validation.txt"
     if raw_train.exists():
@@ -113,7 +93,10 @@ def default_source_paths() -> tuple[Path, Path | None]:
     if tinystories_train.exists() and tinystories_validation.exists():
         return tinystories_train, tinystories_validation
 
-    return _download_tinyshakespeare(), None
+    raise FileNotFoundError(
+        "No training corpus was found. Run `python data.py --dataset tinystories` "
+        "or add data/raw/train.txt (and optionally data/raw/validation.txt)."
+    )
 
 
 def _encode_to_binary(source_path: Path, target_path: Path, tokenizer: BPETokenizer) -> int:
@@ -256,17 +239,14 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Download and prepare BPE-tokenized training data.")
     parser.add_argument(
         "--dataset",
-        choices=("tinyshakespeare", "tinystories"),
-        default="tinyshakespeare",
-        help="Corpus to prepare. TinyStories V2 downloads about 2.3 GB.",
+        choices=("tinystories",),
+        default="tinystories",
+        help="TinyStories V2 downloads about 2.3 GB.",
     )
     parser.add_argument("--force", action="store_true", help="Rebuild tokenizer and token shards.")
     args = parser.parse_args()
 
-    if args.dataset == "tinystories":
-        train_path, validation_path = download_tinystories()
-    else:
-        train_path, validation_path = _download_tinyshakespeare(), None
+    train_path, validation_path = download_tinystories()
     prepare_token_shards(train_path, validation_path, force=args.force)
 
 

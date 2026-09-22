@@ -34,16 +34,10 @@ WARMUP_STEPS = 200
 WEIGHT_DECAY = 0.1
 GRAD_CLIP = 1.0
 
-# Files and data. The default corpus is deliberately small so the whole pipeline
-# can be verified quickly. Use `python data.py --dataset tinystories` to prepare
-# the larger, 2.23 GB TinyStories V2 corpus before a serious training run.
+# Files and data. Use `python data.py --dataset tinystories` to prepare the
+# 2.23 GB TinyStories V2 corpus, or provide your own raw text corpus.
 PROJECT_DIR = Path(__file__).resolve().parent
 DATA_DIR = PROJECT_DIR / "data"
-CORPUS_PATH = DATA_DIR / "input.txt"
-DEFAULT_DATA_URL = (
-    "https://raw.githubusercontent.com/karpathy/char-rnn/master/"
-    "data/tinyshakespeare/input.txt"
-)
 
 ARTIFACT_DIR = PROJECT_DIR / "artifacts"
 CHECKPOINT_DIR = PROJECT_DIR / "checkpoints"

@@ -4,7 +4,7 @@ A roughly 30.6M-parameter, decoder-only GPT built in readable PyTorch. It uses a
 
 ## What this project is (and is not)
 
-This is a real, trainable language model for learning. Tiny Shakespeare is deliberately small and only verifies that the pipeline works; it will produce Shakespeare-like text, not broad modern English. For a serious first run, prepare TinyStories V2: it is 2.23 GB of simple, clean English stories and is explicitly downloaded only when requested.
+This is a real, trainable language model for learning. It uses TinyStories V2 by default: a 2.23 GB corpus of simple, clean English stories. You can also prepare your own UTF-8 plain-text corpus.
 
 ## Project map
 
@@ -31,27 +31,15 @@ If PowerShell says that scripts are disabled, run this once in the same terminal
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
 ```
 
-## Choose and prepare data
+## Prepare TinyStories
 
-### Quick pipeline test
-
-For a short test, set `MAX_STEPS = 100` in `config.py`, then prepare the small starter corpus:
-
-```powershell
-python data.py --dataset tinyshakespeare --force
-```
-
-This confirms that the tokenizer, data pipeline, GPU training, checkpointing, and sampling all work. It will learn Shakespeare-like text only.
-
-### Better first training run
-
-For more natural simple English, prepare TinyStories V2 instead. This explicitly downloads approximately 2.3 GB, then trains a BPE tokenizer and writes memory-mapped token shards to disk:
+TinyStories V2 is the default dataset. This explicitly downloads approximately 2.3 GB, then trains a BPE tokenizer and writes memory-mapped token shards to disk:
 
 ```powershell
 python data.py --dataset tinystories
 ```
 
-After this preparation completes, `train.py` automatically uses TinyStories. You do not need to change any other dataset setting.
+After preparation completes, `train.py` automatically uses TinyStories. You do not need to change any other dataset setting.
 
 ## Train
 
@@ -82,13 +70,13 @@ RESUME_TRAINING = True
 After a best checkpoint has been saved, generate text:
 
 ```powershell
-python sample.py --prompt "ROMEO:" --tokens 400
+python sample.py --prompt "Once upon a time" --tokens 400
 ```
 
 Try more variation with a higher temperature:
 
 ```powershell
-python sample.py --prompt "JULIET:" --tokens 400 --temperature 1.0
+python sample.py --prompt "A little girl found a mysterious box" --tokens 400 --temperature 1.0
 ```
 
 ## Important settings

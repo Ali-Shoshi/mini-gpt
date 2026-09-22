@@ -13,7 +13,9 @@ from tokenizer import BPETokenizer
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate text with MiniGPT.")
-    parser.add_argument("--prompt", default="ROMEO:", help="Text to begin generation with.")
+    parser.add_argument(
+        "--prompt", default="Once upon a time", help="Text to begin generation with."
+    )
     parser.add_argument("--tokens", type=int, default=400, help="Number of new byte tokens.")
     parser.add_argument("--temperature", type=float, default=0.8, help="Higher means more random.")
     parser.add_argument("--top-k", type=int, default=40, help="Keep only the k most likely tokens.")
